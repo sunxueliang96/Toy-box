@@ -1,0 +1,129 @@
+#!/usr/bin/env python
+#coding:utf-8
+"""
+  Author:   --<>
+  Purpose: 
+  Created: 01/25/2017
+"""
+
+import urllib
+from BeautifulSoup import BeautifulSoup
+import socket
+import webbrowser
+import sys
+import getopt
+
+
+
+
+sys.path.append("libs")                 
+xml_all = ''
+def version():
+    print "web_discover_1.0     by raven"
+def banner():
+    print "********************************************************************************************************************************"  
+    print "***************************************************                    *********************************************************"
+    print "**********************************                     web_discover_1.0                *****************************************"  
+    print "***************************************************                    *********************************************************"    
+    print "********************************************************************************************************************************"  
+    print "**************************************************************************             --raven        **************************"  
+    print "********************************************************************************************************************************"
+
+
+def titlemaker(url_open):                           #网站标题处理模块
+    try:
+        content = urllib.urlopen(url_open).read()
+        soup = BeautifulSoup(content)
+        text = soup.find('title')
+        if text == None:
+            text = "<title>None</title>"
+    except:
+        text = "<title>target is NONE or making an error</title>"
+    return text
+
+def retxml(url_open):                               #xml生成模块
+    try:
+        title=titlemaker(url_open)
+        xml = (
+            '<record>\n'
+            '<ip_name>%s</ip_name>\n'
+            '%s\n'
+            '</record>\n'
+            )%(url_open,title)
+    except:
+        xml = ''
+    return xml
+    
+        
+def scanner(dst):                                   #负责链接80端口主要模块
+    ci_sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    socket.setdefaulttimeout(1) 
+    global xml_all                                  #调用全局变量以便生成完整到xml表格
+    try:
+        connect = ci_sock.connect_ex((dst,80))
+        if connect == 0:
+            print str(dst) + " web app is open"    
+            sys.path.append("libs")
+            url = "http://" + str(dst)
+            #print url + "opened on webbrowser"     #这一行和下面单独作出命令      
+            #webbrowser.open(url)                   #在浏览器中打开界面'''
+            retxml_u = retxml(url)
+            xml_all = xml_all + str(retxml_u)
+ 
+    except KeyboardInterrupt:
+        print "User input Ctrl+C ... program stoped"
+        exit() 
+    return xml_all
+    
+def repeader(startip):
+    x= 1
+    while(x<256):
+        x = x + 1
+        ip = startip + str(x)
+        scanner(ip)
+        
+def input_ch(input):                                #更改输入格式
+    split = input.split(".")
+    ip = split[0] + "." + split[1] + "." + split[2] + "."
+    return ip
+def printer():                  #the printer 
+    xmlhead = '<?xml version="1.0" encoding="UTF-8"?>\n<Document>\n'
+    xmlfoot = '</Document>\n'    
+    print xml_finnal                               
+    f= open('output.xml','w')
+    print >> f,xml_finnal
+    xml_finnal = xmlhead + xml_all + xmlfoot
+    f.close
+def scanner_all(begin_ip):
+
+    ip = input_ch(begin_ip)
+    print "Begining from " + ip
+    repeader(ip)
+
+
+def helper():
+    version()
+    print "-h --help    show help message and exit"
+    print "-v --version show version message and exit"
+    print "-s xxx.xxx.xxx.xxx to scan web server"
+    print "-o --output output the xml file"
+def main():                                         #主函数就只负责处理命令行参数好了
+    try:  
+        opts, args = getopt.getopt(sys.argv[1:], "vhos:", ["version","help", "output=","scan="])  
+    except getopt.GetoptError:  
+        helper()
+        exit()
+
+    for o, a in opts:
+        if o in ("-v","--version"):
+            version()
+        if o in ("-h", "--help"):
+            helper()
+            exit()
+        if o in ("-o", "--output"):  
+            printer()
+        if o in ("-s", "--scan"):  
+            scanner_all(a)
+        
+main()
+helper()

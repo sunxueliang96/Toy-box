@@ -15,3 +15,5 @@ ssid_sniffer #嗅探周围所有ssid（包括隐藏ssid），有图形界面
 watcher.py #监控本机所有流量去向，辅助google earth 绘图  
 
 web_scanner1.5.1.py #扫描某个网络下所有的80/445端口，如果响应就自动打开网站以供人工复查。  
+  
+watcher_for_position.py #监视厦大信息学院讲座预约系统是否有空位，发送邮件提醒自己抢位置
